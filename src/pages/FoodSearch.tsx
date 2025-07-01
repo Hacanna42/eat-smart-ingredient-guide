@@ -4,51 +4,44 @@ import { Search, ChevronRight, AlertCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Header from '../components/Header';
+import { searchFood, FoodItem } from '../utils/foodDatabase';
 
 const FoodSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
     
     setIsLoading(true);
-    // 실제 API 호출을 시뮬레이션
+    // 실제 검색 로직 실행
     setTimeout(() => {
-      setSearchResult({
-        name: searchQuery,
-        brand: '롯데',
-        category: '음료',
-        nutrition: {
-          calories: 0,
-          carbs: 0,
-          sugar: 0,
-          protein: 0,
-          fat: 0,
-          sodium: 35
-        },
-        ingredients: [
-          { name: '정제수', description: '기본 용매' },
-          { name: '이산화탄소', description: '탄산감을 위한 첨가물' },
-          { name: '아스파탄', description: '인공감미료, 페닐케톤뇨증 환자 주의' },
-          { name: '아세설팜칼륨', description: '인공감미료' },
-          { name: '구연산', description: '산미료' },
-          { name: '향료', description: '콜라 맛을 위한 향료' }
-        ],
-        warnings: [
-          '페닐케톤뇨증 환자는 섭취 금지',
-          '과다 섭취 시 복통, 설사 가능',
-          '임산부는 제한적 섭취 권장'
-        ],
-        recommendations: {
-          diabetes: '혈당에 영향 없음 - 섭취 가능',
-          diet: '칼로리 제로 - 다이어트에 도움',
-          exercise: '운동 중 수분 보충에 적합'
-        }
-      });
+      const results = searchFood(searchQuery);
+      setSearchResults(results);
+      if (results.length === 1) {
+        setSelectedFood(results[0]);
+      } else {
+        setSelectedFood(null);
+      }
       setIsLoading(false);
-    }, 1500);
+    }, 500);
+  };
+
+  const handleFoodSelect = (food: FoodItem) => {
+    setSelectedFood(food);
+  };
+
+  const handleQuickSearch = (keyword: string) => {
+    setSearchQuery(keyword);
+    const results = searchFood(keyword);
+    setSearchResults(results);
+    if (results.length === 1) {
+      setSelectedFood(results[0]);
+    } else {
+      setSelectedFood(null);
+    }
   };
 
   return (
@@ -61,7 +54,7 @@ const FoodSearch = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex gap-4">
+          <div className="flex gap-4 mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -81,13 +74,72 @@ const FoodSearch = () => {
               {isLoading ? '검색 중...' : '검색'}
             </Button>
           </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {['제로콜라', '프로틴바', '스테비아', '말티톨', '닭가슴살', '그릭요거트'].map((keyword) => (
+              <button
+                key={keyword}
+                onClick={() => handleQuickSearch(keyword)}
+                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-full hover:bg-green-100 hover:text-green-600 transition-colors text-sm"
+              >
+                {keyword}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {searchResult && (
+        {searchResults.length > 0 && !selectedFood && (
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">검색 결과 ({searchResults.length}개)</h3>
+            <div className="space-y-3">
+              {searchResults.map((food) => (
+                <div
+                  key={food.id}
+                  onClick={() => handleFoodSelect(food)}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{food.name}</h4>
+                      <p className="text-gray-600 text-sm">{food.brand} · {food.category}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{food.nutrition.calories}kcal</p>
+                      <ChevronRight className="w-4 h-4 text-gray-400 ml-auto mt-1" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {searchResults.length === 0 && searchQuery && !isLoading && (
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div className="text-gray-400 mb-4">
+              <Search className="w-12 h-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">검색 결과가 없습니다</h3>
+            <p className="text-gray-600">다른 검색어를 시도해보세요</p>
+          </div>
+        )}
+
+        {selectedFood && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900">{searchResult.name}</h2>
-              <p className="text-gray-600">{searchResult.brand} · {searchResult.category}</p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedFood.name}</h2>
+                  <p className="text-gray-600">{selectedFood.brand} · {selectedFood.category}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedFood(null)}
+                  className="text-sm"
+                >
+                  목록으로
+                </Button>
+              </div>
             </div>
 
             <Tabs defaultValue="nutrition" className="w-full">
@@ -100,7 +152,7 @@ const FoodSearch = () => {
 
               <TabsContent value="nutrition" className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(searchResult.nutrition).map(([key, value]) => (
+                  {Object.entries(selectedFood.nutrition).map(([key, value]) => (
                     <div key={key} className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm text-gray-600 mb-1">
                         {key === 'calories' ? '칼로리' : 
@@ -119,7 +171,7 @@ const FoodSearch = () => {
 
               <TabsContent value="ingredients" className="p-6">
                 <div className="space-y-4">
-                  {searchResult.ingredients.map((ingredient: any, index: number) => (
+                  {selectedFood.ingredients.map((ingredient, index) => (
                     <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
                       <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
@@ -133,7 +185,7 @@ const FoodSearch = () => {
 
               <TabsContent value="warnings" className="p-6">
                 <div className="space-y-3">
-                  {searchResult.warnings.map((warning: string, index: number) => (
+                  {selectedFood.warnings.map((warning, index) => (
                     <div key={index} className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                       <p className="text-red-800">{warning}</p>
@@ -144,7 +196,7 @@ const FoodSearch = () => {
 
               <TabsContent value="recommendations" className="p-6">
                 <div className="space-y-4">
-                  {Object.entries(searchResult.recommendations).map(([key, value]) => (
+                  {Object.entries(selectedFood.recommendations).map(([key, value]) => (
                     <div key={key} className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <ChevronRight className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <div>
