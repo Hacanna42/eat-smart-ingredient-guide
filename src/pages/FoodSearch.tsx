@@ -110,7 +110,7 @@ const FoodSearch = () => {
                          key === 'fat' ? '지방' : '나트륨'}
                       </div>
                       <div className="text-2xl font-bold text-gray-900">
-                        {value}{key === 'calories' ? 'kcal' : key === 'sodium' ? 'mg' : 'g'}
+                        {value as number}{key === 'calories' ? 'kcal' : key === 'sodium' ? 'mg' : 'g'}
                       </div>
                     </div>
                   ))}
@@ -152,7 +152,7 @@ const FoodSearch = () => {
                           {key === 'diabetes' ? '당뇨 환자' : 
                            key === 'diet' ? '다이어트' : '운동'}
                         </h4>
-                        <p className="text-green-700 text-sm mt-1">{value as string}</p>
+                        <p className="text-green-700 text-sm mt-1">{String(value)}</p>
                       </div>
                     </div>
                   ))}
