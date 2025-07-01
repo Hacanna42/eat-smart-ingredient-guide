@@ -1,24 +1,33 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ChevronRight, AlertCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { searchFood, FoodItem } from '../utils/foodDatabase';
 
 const FoodSearch = () => {
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return;
+  useEffect(() => {
+    const query = searchParams.get('q');
+    if (query) {
+      setSearchQuery(query);
+      performSearch(query);
+    }
+  }, [searchParams]);
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) return;
     
     setIsLoading(true);
-    // 실제 검색 로직 실행
     setTimeout(() => {
-      const results = searchFood(searchQuery);
+      const results = searchFood(query);
       setSearchResults(results);
       if (results.length === 1) {
         setSelectedFood(results[0]);
@@ -29,19 +38,17 @@ const FoodSearch = () => {
     }, 500);
   };
 
+  const handleSearch = () => {
+    performSearch(searchQuery);
+  };
+
   const handleFoodSelect = (food: FoodItem) => {
     setSelectedFood(food);
   };
 
   const handleQuickSearch = (keyword: string) => {
     setSearchQuery(keyword);
-    const results = searchFood(keyword);
-    setSearchResults(results);
-    if (results.length === 1) {
-      setSelectedFood(results[0]);
-    } else {
-      setSelectedFood(null);
-    }
+    performSearch(keyword);
   };
 
   return (
@@ -76,7 +83,7 @@ const FoodSearch = () => {
           </div>
           
           <div className="flex flex-wrap gap-2">
-            {['제로콜라', '프로틴바', '스테비아', '말티톨', '닭가슴살', '그릭요거트'].map((keyword) => (
+            {['제로콜라', '프로틴바', '스테비아', '말티톨', '닭가슴살', '그릭요거트', '롯데샌드', '롯데비엔나', '롯데제주감귤'].map((keyword) => (
               <button
                 key={keyword}
                 onClick={() => handleQuickSearch(keyword)}

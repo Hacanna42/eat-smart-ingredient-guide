@@ -199,6 +199,187 @@ export const foodDatabase: FoodItem[] = [
       diet: '고단백 저지방 - 다이어트에 도움',
       exercise: '운동 후 단백질 보충에 적합'
     }
+  },
+  // 롯데 제품 데이터 추가
+  {
+    id: '7',
+    name: '롯데샌드',
+    brand: '롯데제과',
+    category: '과자류',
+    nutrition: {
+      calories: 529,
+      carbs: 63.46,
+      sugar: 25,
+      protein: 3.85,
+      fat: 28.85,
+      sodium: 202
+    },
+    ingredients: [
+      { name: '밀가루', description: '주원료, 탄수화물 공급' },
+      { name: '설탕', description: '감미료' },
+      { name: '팜오일', description: '식물성 유지' },
+      { name: '코코아가루', description: '초콜릿 맛' }
+    ],
+    warnings: [
+      '고칼로리 식품으로 과다 섭취 주의',
+      '당뇨 환자 섭취 제한',
+      '글루텐 함유로 민감자 주의'
+    ],
+    recommendations: {
+      diabetes: '고당분 - 섭취 제한 권장',
+      diet: '고칼로리 - 다이어트 시 제한',
+      exercise: '운동 전 에너지 보충 가능하나 과량 금지'
+    }
+  },
+  {
+    id: '8',
+    name: '롯데 빅팜',
+    brand: '롯데웰푸드',
+    category: '식육가공품',
+    nutrition: {
+      calories: 275,
+      carbs: 5,
+      sugar: 1.67,
+      protein: 11.67,
+      fat: 23.33,
+      sodium: 700
+    },
+    ingredients: [
+      { name: '돼지고기', description: '주원료 육류' },
+      { name: '소금', description: '간을 맞추는 조미료' },
+      { name: '아질산나트륨', description: '보존료, 발색제' },
+      { name: '향신료', description: '맛과 향 개선' }
+    ],
+    warnings: [
+      '고나트륨 식품으로 고혈압 환자 주의',
+      '가공육으로 과다 섭취 금지',
+      '충분히 가열하여 섭취'
+    ],
+    recommendations: {
+      diabetes: '저탄수화물 - 적정량 섭취 가능',
+      diet: '고지방, 고나트륨 - 다이어트 시 제한',
+      exercise: '단백질 공급원이나 나트륨 과다 주의'
+    }
+  },
+  {
+    id: '9',
+    name: '롯데비엔나',
+    brand: '롯데푸드',
+    category: '식육가공품',
+    nutrition: {
+      calories: 270,
+      carbs: 4,
+      sugar: 1,
+      protein: 13,
+      fat: 22,
+      sodium: 780
+    },
+    ingredients: [
+      { name: '돼지고기', description: '주원료 육류' },
+      { name: '닭고기', description: '보조 단백질원' },
+      { name: '전분', description: '결착제' },
+      { name: '아질산나트륨', description: '보존료' }
+    ],
+    warnings: [
+      '고나트륨 식품으로 혈압 관리 필요자 주의',
+      '가공육 과다 섭취 금지',
+      '어린이 섭취량 조절 필요'
+    ],
+    recommendations: {
+      diabetes: '저탄수화물 - 적정량 섭취 가능',
+      diet: '고지방 고나트륨 - 다이어트 시 제한',
+      exercise: '단백질 공급원이나 나트륨 주의'
+    }
+  },
+  {
+    id: '10',
+    name: '롯데뻥소리',
+    brand: '우리식품',
+    category: '과자류',
+    nutrition: {
+      calories: 432,
+      carbs: 84,
+      sugar: 28,
+      protein: 6,
+      fat: 8,
+      sodium: 105
+    },
+    ingredients: [
+      { name: '쌀', description: '주원료 곡물' },
+      { name: '설탕', description: '감미료' },
+      { name: '식용유', description: '바삭함을 위한 유지' },
+      { name: '소금', description: '간맞춤용' }
+    ],
+    warnings: [
+      '고탄수화물, 고당분 식품',
+      '당뇨 환자 섭취 주의',
+      '치아 건강에 주의'
+    ],
+    recommendations: {
+      diabetes: '고당분 - 섭취 제한 권장',
+      diet: '고칼로리 - 다이어트 시 소량만',
+      exercise: '운동 전 간단한 에너지 보충 가능'
+    }
+  },
+  {
+    id: '11',
+    name: '롯데키스틱',
+    brand: '롯데푸드',
+    category: '수산가공식품',
+    nutrition: {
+      calories: 180,
+      carbs: 16,
+      sugar: 8,
+      protein: 8,
+      fat: 9.6,
+      sodium: 760
+    },
+    ingredients: [
+      { name: '어육', description: '주원료 수산물' },
+      { name: '전분', description: '결착제' },
+      { name: '설탕', description: '감미료' },
+      { name: '소금', description: '조미료' }
+    ],
+    warnings: [
+      '고나트륨 식품으로 혈압 주의',
+      '어류 알레르기 환자 주의',
+      '냉장보관 필수'
+    ],
+    recommendations: {
+      diabetes: '적정 탄수화물 - 소량 섭취 가능',
+      diet: '중간 칼로리 - 적정량 섭취',
+      exercise: '단백질 보충에 도움'
+    }
+  },
+  {
+    id: '12',
+    name: '롯데제주감귤',
+    brand: '롯데칠성음료',
+    category: '음료류',
+    nutrition: {
+      calories: 35,
+      carbs: 8.5,
+      sugar: 6,
+      protein: 0,
+      fat: 0,
+      sodium: 3
+    },
+    ingredients: [
+      { name: '감귤농축액', description: '제주 감귤 착즙' },
+      { name: '정제수', description: '기본 용매' },
+      { name: '설탕', description: '감미료' },
+      { name: '구연산', description: '산미료' }
+    ],
+    warnings: [
+      '당분 함유로 당뇨 환자 주의',
+      '과다 섭취 시 설사 가능',
+      '치아 건강 주의'
+    ],
+    recommendations: {
+      diabetes: '당분 함유 - 제한적 섭취',
+      diet: '저칼로리 - 적정량 섭취 가능',
+      exercise: '운동 중 수분 및 당분 보충에 적합'
+    }
   }
 ];
 

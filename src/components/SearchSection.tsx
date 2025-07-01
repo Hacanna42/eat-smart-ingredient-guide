@@ -1,9 +1,27 @@
 
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SearchSection = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const handleQuickSearch = (keyword: string) => {
+    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <section id="search" className="py-16 bg-gradient-to-br from-green-50 to-blue-50">
@@ -23,10 +41,14 @@ const SearchSection = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="제품명을 입력하세요 (예: 제로콜라, 단백질바)"
             className="block w-full pl-10 pr-12 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
           />
-          <button className="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <button 
+            onClick={handleSearch}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
             <div className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">
               검색
             </div>
@@ -37,7 +59,7 @@ const SearchSection = () => {
           {['제로콜라', '프로틴바', '스테비아', '말티톨'].map((keyword) => (
             <button
               key={keyword}
-              onClick={() => setSearchQuery(keyword)}
+              onClick={() => handleQuickSearch(keyword)}
               className="px-4 py-2 bg-white text-gray-600 rounded-full border border-gray-200 hover:border-green-300 hover:text-green-600 transition-colors"
             >
               {keyword}
