@@ -1,73 +1,50 @@
-# Welcome to your Lovable project
+# FoodWise - 식품 정보를 쉽고 빠르게
+배포 주소: https://eat-smart-ingredient-guide.lovable.app/
+<img width="1481" alt="image" src="https://github.com/user-attachments/assets/54463ec0-0a42-4b39-95b1-58673c2cd3df" />
 
-## Project info
 
-**URL**: https://lovable.dev/projects/063a4a1f-4363-469f-9b5c-71e1604784d6
+### 사용자는 누구인가?
+| 사용자 | 사용자 정의                   |
+| --- | ------------------------ |
+| 소비자 | 합리적이고 건강한 식품을 소비하고 싶은 사람 |
 
-## How can I edit this code?
+### 사용자의 니즈
+| 사용자 | 사용자 니즈                          |
+| --- | ------------------------------- |
+| 소비자 | 식품 영양성분, 원재료 정보 및 지식, 섭취에 대한 조언 |
 
-There are several ways of editing your application.
+### 페르소나
+| 사용자 | 페르소나                                                                                                       |
+| :-: | ---------------------------------------------------------------------------------------------------------- |
+| 소비자 | 이름: 신예현<br>나이: 24세<br>좋아하는 것: 간식 먹기<br>목표: 건강을 생각하며 합리적이게 간식을 먹고 싶다.<br>니즈: 식품 영양성분, 원재료 정보, 섭취에 대한 조언<br> |
 
-**Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/063a4a1f-4363-469f-9b5c-71e1604784d6) and start prompting.
+## 사용자 시나리오
+#### 건강한 소비자 시나리오
+- 목표: 건강에 해롭지 않은 간식을 먹기
+	- 간식을 먹고 싶은 예현이는 편의점에서 건강하게 먹을 수 있는 간식을 사려고 합니다.
+	- 많은 당과 칼로리를 섭취하지 않기 위해 제로, 저당 간식들 위주로 고민합니다.
+	- 간식 뒷면을 보니 온갖 처음 듣는 원재료명들이 있고, 포화지방과 나트륨이 몇g 있다는데 먹어도 될지 판단하는데에 어려움을 느낍니다.
+	- 예현이는 섭취 여부를 결정하기 위해 의문의 원재료명이었던 '말티톨', '아스파탐', '수크랄로스', '아세설팜칼륨' 을 인터넷에 검색해보는데 내용이 어려워서 고전합니다.
+	- 이때, 서비스 사이트에 접속해서 먹고자 하는 간식의 이름을 검색합니다.
+	- 먹고자 하는 간식의 영양정보가 나오고, 어려웠던 원재료명들이 요약되어 섭취 시 주의할 점이 나옵니다.
+	- '말티톨' 이 설사를 유발한다는 점과, '포화지방' 은 체내에 쉽게 축적되어 살이 찔 수 있다는 유의문을 확인합니다.
+	- 사이트 내에 있는 대화형 Q&A AI에게 "요즘 장이 안좋은데 섭취해도 될까요?" 라고 물어봅니다.
+	- 현재 영양성분과 원재료를 모두 고려해서 AI는 섭취에 대한 조언을 합니다: "말티톨은 설사를 유발할 수 있으므로, 설사가 심하다면 말티톨이 함유되지 않은 제품을 섭취하는 것이 좋습니다. 아스타팜 같은 대체당이 함유된 식품이 유리합니다."
+	- 예현이는 말티톨이 함유되지 않은 저당 식품을 구매합니다.
 
-Changes made via Lovable will be committed automatically to this repo.
+#### 다이어트 소비자 시나리오
+- 목표: 살이 덜 찌는 간식을 먹기
+	- 예현이는 살이 덜 찌는 간식을 사려고 합니다.
+	- 간식을 서비스에 검색하니, 원재료명과 영양성분 정보들 그리고 식품에 대한 종합적인 분석 요약글이 안내됩니다.
+	- 아직 고민되던 예현이는 사이트 내에 있는 대화형 Q&A AI에게 "요즘 다이어트를 하는 중인데 섭취해도 괜찮을까요?" 라고 물어봅니다.
+	- AI가 다이어트 중 섭취에 대한 조언: "포화지방이 기타 간식에 비해 다소 낮은 편이므로, 먹고 싶을경우 소량 섭취해도 괜찮다." 을 해줍니다.
+	- 예현이는 해당 제품을 구매합니다.
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/063a4a1f-4363-469f-9b5c-71e1604784d6) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+#### 당뇨병 소비자 시나리오
+- 목표: 당이 없는 간식을 섭취하기
+	- 예현이는 혈당을 올리지 않는 간식을 사려고 합니다.
+	- 편의점에서 제로 간식과 음료를 고르고, 서비스에서 해당 간식들을 검색합니다.
+	- 영양성분에 포함된 '당알콜'은 GI지수가 높아서 당뇨병 환자에게도 안전하지 않을 수 있다는 경고문을 확인합니다.
+	- 해당 사항에 대해 더 궁금했던 예현이는 사이트 내의 AI에게 질문하고, 궁금증을 해결합니다.
+	- 예현이는 당알콜이 포함되지 않은 음식을 구매하게 됩니다.
