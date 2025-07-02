@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Tesseract from "tesseract.js";
@@ -12,6 +12,7 @@ const MOCK_OCR_TEXT = `• 식품유형:탄산음료 • 소비기한: 용기 �
 
 const SearchSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [autoComplete, setAutoComplete] = useState<string | null>(null);
   const navigate = useNavigate();
   const [cameraOpen, setCameraOpen] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -19,6 +20,13 @@ const SearchSection = () => {
   const [allExtractedIngredients, setAllExtractedIngredients] = useState<string[] | null>(null);
   const [matchedProducts, setMatchedProducts] = useState<any[] | null>(null);
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
+  const [autoCompleteList, setAutoCompleteList] = useState<string[]>([]);
+  const [placeholderProduct, setPlaceholderProduct] = useState<string>("");
+
+  useEffect(() => {
+    const names = foodDatabase.map((f) => f.name);
+    setPlaceholderProduct(names[Math.floor(Math.random() * names.length)] || "제로콜라");
+  }, []);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -34,6 +42,27 @@ const SearchSection = () => {
 
   const handleCameraClick = () => {
     setCameraOpen(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (!value) {
+      setAutoCompleteList([]);
+      return;
+    }
+    const lower = value.toLowerCase();
+    // 식품명, 브랜드, 카테고리, 원재료명에서 포함되는 것 모두 찾기
+    const foodMatches = foodDatabase
+      .filter((f) => f.name.toLowerCase().includes(lower) || f.brand.toLowerCase().includes(lower) || f.category.toLowerCase().includes(lower))
+      .map((f) => f.name);
+    const ingredientMatches = foodDatabase
+      .flatMap((f) => f.ingredients)
+      .filter((i) => i.name.toLowerCase().includes(lower))
+      .map((i) => i.name);
+    // 중복 제거, 최대 5개
+    const all = Array.from(new Set([...foodMatches, ...ingredientMatches])).slice(0, 5);
+    setAutoCompleteList(all);
   };
 
   // CameraModal 컴포넌트 정의
@@ -93,10 +122,8 @@ const SearchSection = () => {
         setIngredientInfo(foundIngredients);
       }
 
-      const ingredientNames = foundIngredients.map(ing => ing.name);
-      const matchedFoods = foodDatabase.filter((food) => 
-        food.ingredients.some((i) => ingredientNames.includes(i.name))
-      );
+      const ingredientNames = foundIngredients.map((ing) => ing.name);
+      const matchedFoods = foodDatabase.filter((food) => food.ingredients.some((i) => ingredientNames.includes(i.name)));
       if (matchedFoods.length > 0) {
         setMatchedProducts(matchedFoods);
       }
@@ -104,7 +131,7 @@ const SearchSection = () => {
 
     const handleMockOcr = () => {
       setSearchQuery(MOCK_OCR_TEXT.replace(/\n/g, " "));
-      
+
       const allIngredients = extractAllIngredients(MOCK_OCR_TEXT);
       setAllExtractedIngredients(allIngredients);
 
@@ -113,14 +140,12 @@ const SearchSection = () => {
         setIngredientInfo(foundIngredients);
       }
 
-      const ingredientNames = foundIngredients.map(ing => ing.name);
-      const matchedFoods = foodDatabase.filter((food) => 
-        food.ingredients.some((i) => ingredientNames.includes(i.name))
-      );
+      const ingredientNames = foundIngredients.map((ing) => ing.name);
+      const matchedFoods = foodDatabase.filter((food) => food.ingredients.some((i) => ingredientNames.includes(i.name)));
       if (matchedFoods.length > 0) {
         setMatchedProducts(matchedFoods);
       }
-      
+
       onClose();
     };
 
@@ -229,9 +254,7 @@ const SearchSection = () => {
       <div className="w-full max-w-2xl text-center relative z-10">
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">FoodWise</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            식품 정보를 쉽고 빠르게 확인하세요
-          </p>
+          <p className="text-xl text-gray-600 mb-8">식품 정보를 쉽고 빠르게 확인하세요</p>
         </div>
 
         <div className="relative mb-8">
@@ -241,11 +264,19 @@ const SearchSection = () => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
-            placeholder="제품명을 입력하세요"
-            className="block w-full pl-12 pr-32 py-5 text-lg border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg bg-white/80 backdrop-blur-sm"
+            placeholder={`제품명을 입력하세요 (예: ${placeholderProduct})`}
+            className="block w-full pl-10 pr-24 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
           />
+          {/* 자동완성 추천 리스트 */}
+          {autoCompleteList.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-1 text-gray-400 text-sm text-left pl-10 select-none pointer-events-none">
+              {autoCompleteList.map((item, idx) => (
+                <div key={idx}>{item}</div>
+              ))}
+            </div>
+          )}
           <div className="absolute inset-y-0 right-0 flex items-center">
             <button
               onClick={handleCameraClick}
@@ -264,9 +295,7 @@ const SearchSection = () => {
           </div>
         </div>
 
-        <div className="text-gray-500 text-sm">
-          카메라로 원재료 라벨을 촬영하거나 제품명을 직접 검색해보세요
-        </div>
+        <div className="text-gray-500 text-sm">카메라로 원재료 라벨을 촬영하거나 제품명을 직접 검색해보세요</div>
       </div>
 
       <CameraModal
@@ -285,21 +314,19 @@ const SearchSection = () => {
               ×
             </button>
             <h3 className="text-lg font-bold mb-4">인식된 원재료명</h3>
-            
+
             {/* 모든 추출된 원재료 */}
             <div className="mb-6">
               <h4 className="font-semibold text-gray-800 mb-3">전체 인식된 원재료 ({allExtractedIngredients.length}개)</h4>
               <div className="flex flex-wrap gap-2">
                 {allExtractedIngredients.map((ingredient, index) => {
-                  const foundIngredient = ingredientInfo?.find(ing => ing.name === ingredient);
+                  const foundIngredient = ingredientInfo?.find((ing) => ing.name === ingredient);
                   return (
                     <span
                       key={index}
                       onClick={() => foundIngredient && handleIngredientClick(foundIngredient)}
                       className={`px-3 py-1 rounded-full text-sm ${
-                        foundIngredient 
-                          ? 'bg-green-100 text-green-800 cursor-pointer hover:bg-green-200' 
-                          : 'bg-gray-100 text-gray-600'
+                        foundIngredient ? "bg-green-100 text-green-800 cursor-pointer hover:bg-green-200" : "bg-gray-100 text-gray-600"
                       }`}
                     >
                       {ingredient}
@@ -321,21 +348,11 @@ const SearchSection = () => {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="font-semibold text-green-800">{ingredient.name}</div>
-                        <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">
-                          {ingredient.category}
-                        </span>
+                        <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">{ingredient.category}</span>
                       </div>
                       <div className="text-gray-700 text-sm mb-2">{ingredient.description}</div>
-                      {ingredient.healthInfo && (
-                        <div className="text-blue-700 text-xs bg-blue-50 p-2 rounded">
-                          💡 {ingredient.healthInfo}
-                        </div>
-                      )}
-                      {ingredient.allergyInfo && (
-                        <div className="text-red-700 text-xs bg-red-50 p-2 rounded mt-1">
-                          ⚠️ {ingredient.allergyInfo}
-                        </div>
-                      )}
+                      {ingredient.healthInfo && <div className="text-blue-700 text-xs bg-blue-50 p-2 rounded">💡 {ingredient.healthInfo}</div>}
+                      {ingredient.allergyInfo && <div className="text-red-700 text-xs bg-red-50 p-2 rounded mt-1">⚠️ {ingredient.allergyInfo}</div>}
                     </div>
                   ))}
                 </div>
@@ -361,9 +378,7 @@ const SearchSection = () => {
             )}
 
             {/* AI 상담 모듈 추가 */}
-            {allExtractedIngredients && (
-              <IngredientAIChat ingredients={allExtractedIngredients} />
-            )}
+            {allExtractedIngredients && <IngredientAIChat ingredients={allExtractedIngredients} />}
           </div>
         </div>
       )}
@@ -381,33 +396,23 @@ const SearchSection = () => {
             <div className="text-left">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-2xl font-bold text-gray-900">{selectedIngredient.name}</h3>
-                <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                  {selectedIngredient.category}
-                </span>
+                <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">{selectedIngredient.category}</span>
               </div>
-              
+
               <p className="text-gray-600 mb-6">{selectedIngredient.description}</p>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 {selectedIngredient.healthInfo && (
                   <div>
-                    <h4 className="flex items-center gap-2 font-semibold text-green-800 mb-3">
-                      💡 건강 정보
-                    </h4>
-                    <div className="text-green-700 bg-green-50 p-3 rounded-lg">
-                      {selectedIngredient.healthInfo}
-                    </div>
+                    <h4 className="flex items-center gap-2 font-semibold text-green-800 mb-3">💡 건강 정보</h4>
+                    <div className="text-green-700 bg-green-50 p-3 rounded-lg">{selectedIngredient.healthInfo}</div>
                   </div>
                 )}
-                
+
                 {selectedIngredient.allergyInfo && (
                   <div>
-                    <h4 className="flex items-center gap-2 font-semibold text-red-800 mb-3">
-                      ⚠️ 주의사항
-                    </h4>
-                    <div className="text-red-700 bg-red-50 p-3 rounded-lg">
-                      {selectedIngredient.allergyInfo}
-                    </div>
+                    <h4 className="flex items-center gap-2 font-semibold text-red-800 mb-3">⚠️ 주의사항</h4>
+                    <div className="text-red-700 bg-red-50 p-3 rounded-lg">{selectedIngredient.allergyInfo}</div>
                   </div>
                 )}
               </div>

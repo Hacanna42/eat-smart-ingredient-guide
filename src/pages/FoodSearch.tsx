@@ -1,30 +1,42 @@
-
-import React, { useState, useEffect } from 'react';
-import { Search, ChevronRight, AlertCircle, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSearchParams } from 'react-router-dom';
-import Header from '../components/Header';
-import { searchFood, FoodItem } from '../utils/foodDatabase';
+import React, { useState, useEffect } from "react";
+import { Search, ChevronRight, AlertCircle, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "react-router-dom";
+import Header from "../components/Header";
+import { searchFood, FoodItem, foodDatabase } from "../utils/foodDatabase";
 
 const FoodSearch = () => {
   const [searchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [placeholderProduct, setPlaceholderProduct] = useState<string>("");
+
+  // 로딩 애니메이션용 이미지
+  const loadingImages = [
+    "/lovable-uploads/5d816d90-6b07-47ac-8242-26ea55e6575a.png", // 새우깡
+    "/lovable-uploads/4ac9b88b-38ad-4769-8b2a-1cabbc4dd4ac.png", // 아이스크림(가정)
+  ];
+  const [loadingImgIdx, setLoadingImgIdx] = useState(0);
 
   useEffect(() => {
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
     if (query) {
       setSearchQuery(query);
       performSearch(query);
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const names = foodDatabase.map((f) => f.name);
+    setPlaceholderProduct(names[Math.floor(Math.random() * names.length)] || "제로콜라");
+  }, []);
+
   const performSearch = (query: string) => {
     if (!query.trim()) return;
-    
+
     setIsLoading(true);
     setTimeout(() => {
       const results = searchFood(query);
@@ -39,6 +51,7 @@ const FoodSearch = () => {
   };
 
   const handleSearch = () => {
+    setLoadingImgIdx((idx) => (idx + 1) % loadingImages.length);
     performSearch(searchQuery);
   };
 
@@ -68,22 +81,35 @@ const FoodSearch = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="제품명을 입력하세요 (예: 제로콜라, 프로틴바)"
+                placeholder={`제품명을 입력하세요 (예: ${placeholderProduct})`}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
-            <Button 
-              onClick={handleSearch} 
+            <Button
+              onClick={handleSearch}
               disabled={isLoading}
-              className="bg-green-500 hover:bg-green-600 px-8"
+              className="bg-green-500 hover:bg-green-600 px-8 min-w-[120px]"
             >
-              {isLoading ? '검색 중...' : '검색'}
+              <span className="flex items-center justify-center gap-2 w-full min-w-[104px]">
+                {isLoading ? (
+                  <span className="relative w-10 h-10 inline-block align-middle">
+                    <img
+                      src={loadingImages[loadingImgIdx]}
+                      alt="로딩 식품"
+                      className="absolute left-0 top-0 w-10 h-10 object-cover rounded-full shadow-lg animate-bounce"
+                      style={{ animationDuration: "0.7s" }}
+                    />
+                  </span>
+                ) : (
+                  <span>검색</span>
+                )}
+              </span>
             </Button>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
-            {['제로콜라', '프로틴바', '스테비아', '말티톨', '닭가슴살', '그릭요거트', '롯데샌드', '롯데비엔나', '롯데제주감귤'].map((keyword) => (
+            {["제로콜라", "프로틴바", "스테비아", "말티톨", "닭가슴살", "그릭요거트", "롯데샌드", "롯데비엔나", "롯데제주감귤"].map((keyword) => (
               <button
                 key={keyword}
                 onClick={() => handleQuickSearch(keyword)}
@@ -108,7 +134,9 @@ const FoodSearch = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold text-gray-900">{food.name}</h4>
-                      <p className="text-gray-600 text-sm">{food.brand} · {food.category}</p>
+                      <p className="text-gray-600 text-sm">
+                        {food.brand} · {food.category}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">{food.nutrition.calories}kcal</p>
@@ -137,7 +165,9 @@ const FoodSearch = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">{selectedFood.name}</h2>
-                  <p className="text-gray-600">{selectedFood.brand} · {selectedFood.category}</p>
+                  <p className="text-gray-600">
+                    {selectedFood.brand} · {selectedFood.category}
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -149,7 +179,10 @@ const FoodSearch = () => {
               </div>
             </div>
 
-            <Tabs defaultValue="nutrition" className="w-full">
+            <Tabs
+              defaultValue="nutrition"
+              className="w-full"
+            >
               <TabsList className="w-full justify-start px-6 bg-gray-50">
                 <TabsTrigger value="nutrition">영양성분</TabsTrigger>
                 <TabsTrigger value="ingredients">원재료</TabsTrigger>
@@ -157,29 +190,48 @@ const FoodSearch = () => {
                 <TabsTrigger value="recommendations">섭취 조언</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="nutrition" className="p-6">
+              <TabsContent
+                value="nutrition"
+                className="p-6"
+              >
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.entries(selectedFood.nutrition).map(([key, value]) => (
-                    <div key={key} className="bg-gray-50 p-4 rounded-lg">
+                    <div
+                      key={key}
+                      className="bg-gray-50 p-4 rounded-lg"
+                    >
                       <div className="text-sm text-gray-600 mb-1">
-                        {key === 'calories' ? '칼로리' : 
-                         key === 'carbs' ? '탄수화물' :
-                         key === 'sugar' ? '당류' :
-                         key === 'protein' ? '단백질' :
-                         key === 'fat' ? '지방' : '나트륨'}
+                        {key === "calories"
+                          ? "칼로리"
+                          : key === "carbs"
+                          ? "탄수화물"
+                          : key === "sugar"
+                          ? "당류"
+                          : key === "protein"
+                          ? "단백질"
+                          : key === "fat"
+                          ? "지방"
+                          : "나트륨"}
                       </div>
                       <div className="text-2xl font-bold text-gray-900">
-                        {value as number}{key === 'calories' ? 'kcal' : key === 'sodium' ? 'mg' : 'g'}
+                        {value as number}
+                        {key === "calories" ? "kcal" : key === "sodium" ? "mg" : "g"}
                       </div>
                     </div>
                   ))}
                 </div>
               </TabsContent>
 
-              <TabsContent value="ingredients" className="p-6">
+              <TabsContent
+                value="ingredients"
+                className="p-6"
+              >
                 <div className="space-y-4">
                   {selectedFood.ingredients.map((ingredient, index) => (
-                    <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"
+                    >
                       <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <h4 className="font-semibold text-gray-900">{ingredient.name}</h4>
@@ -190,10 +242,16 @@ const FoodSearch = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="warnings" className="p-6">
+              <TabsContent
+                value="warnings"
+                className="p-6"
+              >
                 <div className="space-y-3">
                   {selectedFood.warnings.map((warning, index) => (
-                    <div key={index} className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg"
+                    >
                       <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                       <p className="text-red-800">{warning}</p>
                     </div>
@@ -201,16 +259,19 @@ const FoodSearch = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="recommendations" className="p-6">
+              <TabsContent
+                value="recommendations"
+                className="p-6"
+              >
                 <div className="space-y-4">
                   {Object.entries(selectedFood.recommendations).map(([key, value]) => (
-                    <div key={key} className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div
+                      key={key}
+                      className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg"
+                    >
                       <ChevronRight className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-green-800">
-                          {key === 'diabetes' ? '당뇨 환자' : 
-                           key === 'diet' ? '다이어트' : '운동'}
-                        </h4>
+                        <h4 className="font-semibold text-green-800">{key === "diabetes" ? "당뇨 환자" : key === "diet" ? "다이어트" : "운동"}</h4>
                         <p className="text-green-700 text-sm mt-1">{String(value)}</p>
                       </div>
                     </div>
