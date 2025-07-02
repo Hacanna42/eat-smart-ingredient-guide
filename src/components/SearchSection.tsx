@@ -1,8 +1,10 @@
+
 import React, { useState } from "react";
 import { Search, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Tesseract from "tesseract.js";
 import { foodDatabase } from "../utils/foodDatabase";
+import { searchIngredients, extractAllIngredients, Ingredient } from "../utils/ingredientDatabase";
 
 const MOCK_OCR_TEXT = `• 식품유형:탄산음료 • 소비기한: 용기 상단 또는 뚜껑 표기일까지 • 원재료명: 정제수, 말티톨,\n알룰\n4, 잔탄검), 대두다당류, 수크랄로스(갈미료), 아시설팜\n수 전기분요, 유구류,추설향료, 제소:, 탕류사대도나 유형에 크로스테제공,아서식품\n: 경기도 안성시 미양면 제2공단 1길 17• 품목보고번호:F5:20000360372336• 메밀,\n땅콩, 밀, 복숭아, 토마토, 아황산류, 호두, 잣을 사용한 제품과 같은 시설에서 제조하고 있\n습니다. • 직사광선을 피해 서늘한 곳에 얼지 않게 보관하시고, 개봉 후\n냉장보관하여 빨리 드십시오.• 제품 고유의 침전물이 생길 수 있으나 품\n질에는 이상이 없습니다. • 개봉시 넘칠 수 있으니 주의하시고 용기 손\n상 및 내용물 변질 시 음용하지 마세요. • 소비자분쟁해결기준(공정위고\n시)에 의거 교환 또는 보상 받을 수 있습니다. • 교환:롯\n데칠성음료(주) 소비자상담팀(수신자부담 080-730\n무색페트\n1472)및 구입처 • 부정•불량식품 신고:국번 없이 1399\n뚜껑:HDPE 리트:PP\n∞`;
 
@@ -11,7 +13,8 @@ const SearchSection = () => {
   const navigate = useNavigate();
   const [cameraOpen, setCameraOpen] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
-  const [ingredientInfo, setIngredientInfo] = useState<{ name: string; description: string }[] | null>(null);
+  const [ingredientInfo, setIngredientInfo] = useState<Ingredient[] | null>(null);
+  const [allExtractedIngredients, setAllExtractedIngredients] = useState<string[] | null>(null);
   const [matchedProducts, setMatchedProducts] = useState<any[] | null>(null);
 
   const handleSearch = () => {
@@ -40,7 +43,6 @@ const SearchSection = () => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [stream, setStream] = React.useState<MediaStream | null>(null);
     const [photo, setPhoto] = React.useState<string | null>(null);
-    const [ocrText, setOcrText] = React.useState<string>("");
 
     React.useEffect(() => {
       if (open) {
@@ -77,56 +79,58 @@ const SearchSection = () => {
 
     const handleAnalyze = async (imageDataUrl: string) => {
       setOcrLoading(true);
-      setOcrText("");
       const result = await Tesseract.recognize(imageDataUrl, "kor+eng", {
         logger: (m) => {},
       });
-      setOcrText(result.data.text);
+      const ocrText = result.data.text;
       setOcrLoading(false);
-      setSearchQuery(result.data.text.trim());
+      setSearchQuery(ocrText.trim());
       onClose();
 
+      // 모든 원재료명 추출
+      const allIngredients = extractAllIngredients(ocrText);
+      setAllExtractedIngredients(allIngredients);
+
       // OCR 결과에서 데이터베이스에 있는 원재료명 찾기
-      const ocrText = result.data.text.replace(/\s+/g, ""); // 공백제거
-      // 모든 원재료명 리스트
-      const allIngredients = foodDatabase.flatMap((food) => food.ingredients.map((i) => i.name));
-      // OCR 결과에 포함된 원재료명만 추출
-      const matched = allIngredients.filter((name) => ocrText.includes(name));
-      // 중복 제거
-      const uniqueMatched = Array.from(new Set(matched));
-      // 설명 정보 매핑
-      const info = uniqueMatched
-        .map((name) => {
-          const found = foodDatabase.flatMap((food) => food.ingredients).find((i) => i.name === name);
-          return found ? { name: found.name, description: found.description } : null;
-        })
-        .filter(Boolean) as { name: string; description: string }[];
-      if (info.length > 0) setIngredientInfo(info);
+      const foundIngredients = searchIngredients(ocrText);
+      if (foundIngredients.length > 0) {
+        setIngredientInfo(foundIngredients);
+      }
 
       // 매칭된 원재료가 포함된 모든 제품의 warnings/recommendations 모으기
-      const matchedFoods = foodDatabase.filter((food) => food.ingredients.some((i) => uniqueMatched.includes(i.name)));
-      if (matchedFoods.length > 0) setMatchedProducts(matchedFoods);
+      const ingredientNames = foundIngredients.map(ing => ing.name);
+      const matchedFoods = foodDatabase.filter((food) => 
+        food.ingredients.some((i) => ingredientNames.includes(i.name))
+      );
+      if (matchedFoods.length > 0) {
+        setMatchedProducts(matchedFoods);
+      }
     };
 
     // 모킹 데이터 촬영 버튼 핸들러
     const handleMockOcr = () => {
       setSearchQuery(MOCK_OCR_TEXT.replace(/\n/g, " "));
+      
+      // 모든 원재료명 추출
+      const allIngredients = extractAllIngredients(MOCK_OCR_TEXT);
+      setAllExtractedIngredients(allIngredients);
+
       // OCR 결과에서 데이터베이스에 있는 원재료명 찾기
-      const ocrText = MOCK_OCR_TEXT.replace(/\s+/g, ""); // 공백제거
-      const allIngredients = foodDatabase.flatMap((food) => food.ingredients.map((i) => i.name));
-      const matched = allIngredients.filter((name) => ocrText.includes(name));
-      const uniqueMatched = Array.from(new Set(matched));
-      const info = uniqueMatched
-        .map((name) => {
-          const found = foodDatabase.flatMap((food) => food.ingredients).find((i) => i.name === name);
-          return found ? { name: found.name, description: found.description } : null;
-        })
-        .filter(Boolean) as { name: string; description: string }[];
-      if (info.length > 0) setIngredientInfo(info);
+      const foundIngredients = searchIngredients(MOCK_OCR_TEXT);
+      if (foundIngredients.length > 0) {
+        setIngredientInfo(foundIngredients);
+      }
 
       // 매칭된 원재료가 포함된 모든 제품의 warnings/recommendations 모으기
-      const matchedFoods = foodDatabase.filter((food) => food.ingredients.some((i) => uniqueMatched.includes(i.name)));
-      if (matchedFoods.length > 0) setMatchedProducts(matchedFoods);
+      const ingredientNames = foundIngredients.map(ing => ing.name);
+      const matchedFoods = foodDatabase.filter((food) => 
+        food.ingredients.some((i) => ingredientNames.includes(i.name))
+      );
+      if (matchedFoods.length > 0) {
+        setMatchedProducts(matchedFoods);
+      }
+      
+      onClose();
     };
 
     if (!open) return null;
@@ -178,6 +182,11 @@ const SearchSection = () => {
         />
       </div>
     );
+  };
+
+  const handleIngredientClick = (ingredient: Ingredient) => {
+    // 개별 원재료 정보를 보여주는 모달 설정
+    setIngredientInfo([ingredient]);
   };
 
   return (
@@ -234,12 +243,13 @@ const SearchSection = () => {
           onClose={() => setCameraOpen(false)}
         />
 
-        {/* 원재료 정보 모달 */}
-        {ingredientInfo && (
+        {/* 모든 인식된 원재료명 표시 */}
+        {allExtractedIngredients && allExtractedIngredients.length > 0 && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl relative max-h-[80vh] overflow-y-auto">
               <button
                 onClick={() => {
+                  setAllExtractedIngredients(null);
                   setIngredientInfo(null);
                   setMatchedProducts(null);
                 }}
@@ -247,21 +257,67 @@ const SearchSection = () => {
               >
                 ×
               </button>
-              <h3 className="text-lg font-bold mb-4">인식된 원재료 정보</h3>
-              <ul className="space-y-3">
-                {ingredientInfo.map((item) => (
-                  <li
-                    key={item.name}
-                    className="p-3 bg-gray-50 rounded-lg text-left"
-                  >
-                    <div className="font-semibold text-green-700">{item.name}</div>
-                    <div className="text-gray-700 text-sm mt-1">{item.description}</div>
-                  </li>
-                ))}
-              </ul>
+              <h3 className="text-lg font-bold mb-4">인식된 원재료명</h3>
+              
+              {/* 모든 추출된 원재료 */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-800 mb-3">전체 인식된 원재료 ({allExtractedIngredients.length}개)</h4>
+                <div className="flex flex-wrap gap-2">
+                  {allExtractedIngredients.map((ingredient, index) => {
+                    const foundIngredient = ingredientInfo?.find(ing => ing.name === ingredient);
+                    return (
+                      <span
+                        key={index}
+                        onClick={() => foundIngredient && handleIngredientClick(foundIngredient)}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          foundIngredient 
+                            ? 'bg-green-100 text-green-800 cursor-pointer hover:bg-green-200' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {ingredient}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 상세 정보가 있는 원재료 */}
+              {ingredientInfo && ingredientInfo.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-green-700 mb-3">상세 정보 ({ingredientInfo.length}개)</h4>
+                  <div className="space-y-3">
+                    {ingredientInfo.map((ingredient, index) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-green-50 rounded-lg text-left border border-green-200"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-semibold text-green-800">{ingredient.name}</div>
+                          <span className="text-xs bg-green-200 text-green-700 px-2 py-1 rounded">
+                            {ingredient.category}
+                          </span>
+                        </div>
+                        <div className="text-gray-700 text-sm mb-2">{ingredient.description}</div>
+                        {ingredient.healthInfo && (
+                          <div className="text-blue-700 text-xs bg-blue-50 p-2 rounded">
+                            💡 {ingredient.healthInfo}
+                          </div>
+                        )}
+                        {ingredient.allergyInfo && (
+                          <div className="text-red-700 text-xs bg-red-50 p-2 rounded mt-1">
+                            ⚠️ {ingredient.allergyInfo}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* 총합 섭취 주의사항 및 조언 */}
               {matchedProducts && matchedProducts.length > 0 && (
-                <div className="mt-6 text-left">
+                <div className="text-left">
                   <h4 className="font-bold text-red-600 mb-2">섭취 주의사항</h4>
                   <ul className="list-disc pl-5 text-sm text-red-700 mb-4">
                     {Array.from(new Set(matchedProducts.flatMap((p) => p.warnings))).map((w, idx) => (
