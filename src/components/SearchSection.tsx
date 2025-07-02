@@ -18,6 +18,7 @@ const SearchSection = () => {
   const [ingredientInfo, setIngredientInfo] = useState<Ingredient[] | null>(null);
   const [allExtractedIngredients, setAllExtractedIngredients] = useState<string[] | null>(null);
   const [matchedProducts, setMatchedProducts] = useState<any[] | null>(null);
+  const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -187,8 +188,18 @@ const SearchSection = () => {
   };
 
   const handleIngredientClick = (ingredient: Ingredient) => {
-    // 개별 원재료 정보를 보여주는 모달 설정
-    setIngredientInfo([ingredient]);
+    setSelectedIngredient(ingredient);
+  };
+
+  const closeIngredientDetail = () => {
+    setSelectedIngredient(null);
+  };
+
+  const closeAllModals = () => {
+    setAllExtractedIngredients(null);
+    setIngredientInfo(null);
+    setMatchedProducts(null);
+    setSelectedIngredient(null);
   };
 
   return (
@@ -215,11 +226,11 @@ const SearchSection = () => {
           <div className="absolute inset-y-0 right-0 flex items-center">
             <button
               onClick={handleCameraClick}
-              className="mr-2 p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              className="mr-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg transition-colors font-medium border border-gray-300"
               aria-label="카메라로 원재료명 촬영"
               type="button"
             >
-              <Camera className="w-6 h-6" />
+              <Camera className="w-5 h-5" />
             </button>
             <button
               onClick={handleSearch}
@@ -252,11 +263,7 @@ const SearchSection = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
             <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl relative max-h-[90vh] overflow-y-auto mx-4">
               <button
-                onClick={() => {
-                  setAllExtractedIngredients(null);
-                  setIngredientInfo(null);
-                  setMatchedProducts(null);
-                }}
+                onClick={closeAllModals}
                 className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
               >
                 ×
@@ -341,6 +348,54 @@ const SearchSection = () => {
               {allExtractedIngredients && (
                 <IngredientAIChat ingredients={allExtractedIngredients} />
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 개별 원재료 상세 정보 모달 */}
+        {selectedIngredient && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl relative max-h-[80vh] overflow-y-auto mx-4">
+              <button
+                onClick={closeIngredientDetail}
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+              <div className="text-left">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-gray-900">{selectedIngredient.name}</h3>
+                  <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                    {selectedIngredient.category}
+                  </span>
+                </div>
+                
+                <p className="text-gray-600 mb-6">{selectedIngredient.description}</p>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  {selectedIngredient.healthInfo && (
+                    <div>
+                      <h4 className="flex items-center gap-2 font-semibold text-green-800 mb-3">
+                        💡 건강 정보
+                      </h4>
+                      <div className="text-green-700 bg-green-50 p-3 rounded-lg">
+                        {selectedIngredient.healthInfo}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedIngredient.allergyInfo && (
+                    <div>
+                      <h4 className="flex items-center gap-2 font-semibold text-red-800 mb-3">
+                        ⚠️ 주의사항
+                      </h4>
+                      <div className="text-red-700 bg-red-50 p-3 rounded-lg">
+                        {selectedIngredient.allergyInfo}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
