@@ -191,8 +191,42 @@ const SearchSection = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 px-4">
-      <div className="w-full max-w-2xl text-center">
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 px-4 relative overflow-hidden">
+      {/* Background snack images */}
+      <div className="absolute inset-0 pointer-events-none">
+        <img
+          src="/lovable-uploads/4ac9b88b-38ad-4769-8b2a-1cabbc4dd4ac.png"
+          alt=""
+          className="absolute top-20 left-10 w-32 h-20 object-contain opacity-10 rotate-12 hidden md:block"
+        />
+        <img
+          src="/lovable-uploads/5d816d90-6b07-47ac-8242-26ea55e6575a.png"
+          alt=""
+          className="absolute top-32 right-16 w-28 h-28 object-contain opacity-10 -rotate-12 hidden md:block"
+        />
+        <img
+          src="/lovable-uploads/4ac9b88b-38ad-4769-8b2a-1cabbc4dd4ac.png"
+          alt=""
+          className="absolute bottom-32 left-20 w-36 h-24 object-contain opacity-8 -rotate-6 hidden md:block"
+        />
+        <img
+          src="/lovable-uploads/5d816d90-6b07-47ac-8242-26ea55e6575a.png"
+          alt=""
+          className="absolute bottom-20 right-10 w-32 h-32 object-contain opacity-8 rotate-6 hidden md:block"
+        />
+        <img
+          src="/lovable-uploads/4ac9b88b-38ad-4769-8b2a-1cabbc4dd4ac.png"
+          alt=""
+          className="absolute top-1/2 left-2 w-24 h-16 object-contain opacity-6 rotate-45 hidden lg:block"
+        />
+        <img
+          src="/lovable-uploads/5d816d90-6b07-47ac-8242-26ea55e6575a.png"
+          alt=""
+          className="absolute top-1/3 right-4 w-20 h-20 object-contain opacity-6 -rotate-45 hidden lg:block"
+        />
+      </div>
+
+      <div className="w-full max-w-2xl text-center relative z-10">
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">FoodWise</h1>
           <p className="text-xl text-gray-600 mb-8">
@@ -210,12 +244,12 @@ const SearchSection = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="제품명을 입력하세요"
-            className="block w-full pl-12 pr-32 py-5 text-lg border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
+            className="block w-full pl-12 pr-32 py-5 text-lg border border-gray-300 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg bg-white/80 backdrop-blur-sm"
           />
           <div className="absolute inset-y-0 right-0 flex items-center">
             <button
               onClick={handleCameraClick}
-              className="mr-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl transition-colors font-medium border border-gray-300"
+              className="mr-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl transition-colors font-medium border border-green-600 shadow-md"
               aria-label="카메라로 원재료명 촬영"
               type="button"
             >
@@ -223,7 +257,7 @@ const SearchSection = () => {
             </button>
             <button
               onClick={handleSearch}
-              className="mr-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl transition-colors font-medium"
+              className="mr-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl transition-colors font-medium shadow-md"
             >
               검색
             </button>
