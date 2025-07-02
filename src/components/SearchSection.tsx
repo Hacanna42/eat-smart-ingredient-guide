@@ -1,12 +1,14 @@
-
 import React, { useState } from "react";
 import { Search, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Tesseract from "tesseract.js";
 import { foodDatabase } from "../utils/foodDatabase";
 import { searchIngredients, extractAllIngredients, Ingredient } from "../utils/ingredientDatabase";
+import IngredientAIChat from "./IngredientAIChat";
 
-const MOCK_OCR_TEXT = `• 식품유형:탄산음료 • 소비기한: 용기 상단 또는 뚜껑 표기일까지 • 원재료명: 정제수, 말티톨,\n알룰\n4, 잔탄검), 대두다당류, 수크랄로스(갈미료), 아시설팜\n수 전기분요, 유구류,추설향료, 제소:, 탕류사대도나 유형에 크로스테제공,아서식품\n: 경기도 안성시 미양면 제2공단 1길 17• 품목보고번호:F5:20000360372336• 메밀,\n땅콩, 밀, 복숭아, 토마토, 아황산류, 호두, 잣을 사용한 제품과 같은 시설에서 제조하고 있\n습니다. • 직사광선을 피해 서늘한 곳에 얼지 않게 보관하시고, 개봉 후\n냉장보관하여 빨리 드십시오.• 제품 고유의 침전물이 생길 수 있으나 품\n질에는 이상이 없습니다. • 개봉시 넘칠 수 있으니 주의하시고 용기 손\n상 및 내용물 변질 시 음용하지 마세요. • 소비자분쟁해결기준(공정위고\n시)에 의거 교환 또는 보상 받을 수 있습니다. • 교환:롯\n데칠성음료(주) 소비자상담팀(수신자부담 080-730\n무색페트\n1472)및 구입처 • 부정•불량식품 신고:국번 없이 1399\n뚜껑:HDPE 리트:PP\n∞`;
+const MOCK_OCR_TEXT = `• 식품유형:탄산음료 • 소비기한: 용기 상단 또는 뚜껑 표기일까지 • 원재료명: 정제수, 말티톨,\n알룰\n4, 잔탄검), 대두다당류, 수크랄로스(갈미료), 아시설팜\n수 전기분요, 유구류,추설향료, 제소:, 탕류사대도나 유형에 크로스테제공,아서식품\n: 경기도 안성시 미양면 제2공단 1길 17• 품목보고번호:F5:20000360372336• 메밀,\n땅콩, 밀, 복숭아, 토마토, 아황산류, 호두, 잣을 사용한 제품과 같은 시설에서 제조하고 있\n습니다. • 직사광선을 피해 서늘한 곳에 얼지 않게 보관하시고, 개봉 후\n냉장보관하여 빨리 드십시오.• 제품 고유의 침전물이 생길 수 있으나 품\n질에는 이상이 없습니다. • 개봉시 넘칠 수 있으니 주의하시고 용기 손\n상 및 내용물 변질 시 음용하지 마세요. • 소비자분쟁해결기준(공정위고\n시)에 의거 교환 또는 보상 받을 수 있습니다. • 교환:롯\n데칠성음료(주) 소비자상담팀(수신자부담 080-730\n무색페트\n1472)및 구입처 • 부정•불량식품 신고:국번 없이 1399
+뚜껑:HDPE 리트:PP
+∞`;
 
 const SearchSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -208,22 +210,24 @@ const SearchSection = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="제품명을 입력하세요 (예: 제로콜라, 단백질바)"
-            className="block w-full pl-10 pr-24 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
+            className="block w-full pl-10 pr-32 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
           />
-          <button
-            onClick={handleSearch}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-          >
-            <div className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">검색</div>
-          </button>
-          <button
-            onClick={handleCameraClick}
-            className="absolute inset-y-0 right-20 flex items-center px-2 text-gray-500 hover:text-green-600 transition-colors"
-            aria-label="카메라로 원재료명 촬영"
-            type="button"
-          >
-            <Camera className="w-7 h-7" />
-          </button>
+          <div className="absolute inset-y-0 right-0 flex items-center">
+            <button
+              onClick={handleCameraClick}
+              className="mr-2 p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              aria-label="카메라로 원재료명 촬영"
+              type="button"
+            >
+              <Camera className="w-6 h-6" />
+            </button>
+            <button
+              onClick={handleSearch}
+              className="mr-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors font-medium"
+            >
+              검색
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -246,7 +250,7 @@ const SearchSection = () => {
         {/* 모든 인식된 원재료명 표시 */}
         {allExtractedIngredients && allExtractedIngredients.length > 0 && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl relative max-h-[80vh] overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl relative max-h-[90vh] overflow-y-auto mx-4">
               <button
                 onClick={() => {
                   setAllExtractedIngredients(null);
@@ -317,7 +321,7 @@ const SearchSection = () => {
 
               {/* 총합 섭취 주의사항 및 조언 */}
               {matchedProducts && matchedProducts.length > 0 && (
-                <div className="text-left">
+                <div className="text-left mb-6">
                   <h4 className="font-bold text-red-600 mb-2">섭취 주의사항</h4>
                   <ul className="list-disc pl-5 text-sm text-red-700 mb-4">
                     {Array.from(new Set(matchedProducts.flatMap((p) => p.warnings))).map((w, idx) => (
@@ -331,6 +335,11 @@ const SearchSection = () => {
                     ))}
                   </ul>
                 </div>
+              )}
+
+              {/* AI 상담 모듈 추가 */}
+              {allExtractedIngredients && (
+                <IngredientAIChat ingredients={allExtractedIngredients} />
               )}
             </div>
           </div>
