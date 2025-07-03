@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, ChevronRight, AlertCircle, Info } from "lucide-react";
+import { Search, ChevronRight, AlertCircle, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from "react-router-dom";
@@ -13,6 +13,7 @@ const FoodSearch = () => {
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [placeholderProduct, setPlaceholderProduct] = useState<string>("");
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
   // 로딩 애니메이션용 이미지
   const loadingImages = [
@@ -20,6 +21,13 @@ const FoodSearch = () => {
     "/lovable-uploads/4ac9b88b-38ad-4769-8b2a-1cabbc4dd4ac.png", // 아이스크림(가정)
   ];
   const [loadingImgIdx, setLoadingImgIdx] = useState(0);
+
+  useEffect(() => {
+    const storedHistory = localStorage.getItem("searchHistory");
+    if (storedHistory) {
+      setSearchHistory(JSON.parse(storedHistory));
+    }
+  }, []);
 
   useEffect(() => {
     const query = searchParams.get("q");
@@ -34,9 +42,17 @@ const FoodSearch = () => {
     setPlaceholderProduct(names[Math.floor(Math.random() * names.length)] || "제로콜라");
   }, []);
 
+  const updateSearchHistory = (query: string) => {
+    const newHistory = [query, ...searchHistory.filter((item) => item !== query)];
+    const limitedHistory = newHistory.slice(0, 10);
+    setSearchHistory(limitedHistory);
+    localStorage.setItem("searchHistory", JSON.stringify(limitedHistory));
+  };
+
   const performSearch = (query: string) => {
     if (!query.trim()) return;
 
+    updateSearchHistory(query.trim());
     setIsLoading(true);
     setTimeout(() => {
       const results = searchFood(query);
@@ -62,6 +78,12 @@ const FoodSearch = () => {
   const handleQuickSearch = (keyword: string) => {
     setSearchQuery(keyword);
     performSearch(keyword);
+  };
+
+  const removeHistoryItem = (termToRemove: string) => {
+    const newHistory = searchHistory.filter((item) => item !== termToRemove);
+    setSearchHistory(newHistory);
+    localStorage.setItem("searchHistory", JSON.stringify(newHistory));
   };
 
   return (
@@ -119,6 +141,33 @@ const FoodSearch = () => {
               </button>
             ))}
           </div>
+
+          {searchHistory.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-sm font-semibold text-gray-600 mb-2">최근 검색어</h4>
+              <div className="flex flex-wrap gap-2">
+                {searchHistory.map((term, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 bg-gray-100 rounded-full pl-3 pr-2 py-1 group"
+                  >
+                    <button
+                      onClick={() => handleQuickSearch(term)}
+                      className="text-sm text-gray-700 group-hover:text-gray-900"
+                    >
+                      {term}
+                    </button>
+                    <button
+                      onClick={() => removeHistoryItem(term)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {searchResults.length > 0 && !selectedFood && (
